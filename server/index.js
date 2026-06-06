@@ -12,11 +12,19 @@ await runMigrations();
 
 const app = express();
 const server = http.createServer(app);
+const allowedOrigins = config.clientOrigin.split(",").map((origin) => origin.trim()).filter(Boolean);
+const corsOptions = {
+  origin(origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error(`CORS blocked for origin: ${origin}`));
+  },
+  credentials: true
+};
 const io = new Server(server, {
-  cors: { origin: config.clientOrigin, credentials: true }
+  cors: corsOptions
 });
 
-app.use(cors({ origin: config.clientOrigin, credentials: true }));
+app.use(cors(corsOptions));
 app.use(express.json({ limit: "2mb" }));
 app.use("/api", createRouter());
 

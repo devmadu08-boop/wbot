@@ -48,6 +48,33 @@ npm run windows:startup
 
 After a reboot, Windows runs `pm2 resurrect`, which reloads the process list saved by `pm2 save`.
 
+## Frontend on Vercel, Backend on VPS
+
+Deploy only the `client` folder on Vercel:
+
+1. Import this GitHub repo in Vercel.
+2. Set the Vercel project root directory to `client`.
+3. Add this Vercel environment variable:
+
+```txt
+VITE_API_URL=http://YOUR_VPS_IP_OR_DOMAIN:3000
+```
+
+4. On the VPS `.env`, allow the Vercel frontend origin:
+
+```txt
+CLIENT_ORIGIN=http://localhost:5173,https://YOUR_VERCEL_APP.vercel.app
+```
+
+5. Restart the backend after changing `.env`:
+
+```powershell
+pm2 restart madu-ai-whatsapp-assistant
+pm2 save
+```
+
+If the frontend is served over `https://`, the browser may block requests to an `http://` backend as mixed content. The best production setup is to put the VPS backend behind HTTPS using a domain, IIS reverse proxy, Nginx, Caddy, Cloudflare Tunnel, or another SSL proxy, then set `VITE_API_URL=https://api.your-domain.com`.
+
 ## Notes
 
 - Baileys session files are stored in `BAILEYS_AUTH_DIR`.

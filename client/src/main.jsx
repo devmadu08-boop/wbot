@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import axios from "axios";
 import { io } from "socket.io-client";
@@ -12,12 +12,10 @@ import {
   LogOut,
   MessageCircle,
   Moon,
-  PauseCircle,
   QrCode,
   RefreshCcw,
   Save,
   Search,
-  Send,
   Settings,
   Shield,
   Sparkles,
@@ -29,7 +27,11 @@ import {
 } from "lucide-react";
 import "./styles.css";
 
-const api = axios.create({ baseURL: "/api" });
+const apiOrigin = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
+const apiBaseUrl = apiOrigin ? `${apiOrigin}/api` : "/api";
+const socketUrl = apiOrigin || window.location.origin;
+
+const api = axios.create({ baseURL: apiBaseUrl });
 
 function useAuth() {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -96,7 +98,7 @@ function AppShell({ onLogout }) {
   }, [dark]);
 
   useEffect(() => {
-    const socket = io("http://localhost:3000");
+    const socket = io(socketUrl);
     socket.on("message:new", () => {
       setToast("New WhatsApp message");
       new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=").play().catch(() => {});
@@ -205,7 +207,7 @@ function WhatsApp() {
   }
   useEffect(() => {
     refresh();
-    const socket = io("http://localhost:3000");
+    const socket = io(socketUrl);
     socket.on("whatsapp:status", setState);
     return () => socket.disconnect();
   }, []);
@@ -365,7 +367,7 @@ function Logs() {
   return (
     <div className="space-y-3">
       <div className="toolbar justify-end">
-        <a className="btn-secondary" href="/api/logs/export.csv"><Download size={16} /> CSV</a>
+        <a className="btn-secondary" href={`${apiBaseUrl}/logs/export.csv`}><Download size={16} /> CSV</a>
         <button className="btn-danger" onClick={() => api.delete("/logs").then(() => setRows([]))}><Trash2 size={16} /> Clear</button>
       </div>
       <div className="panel p-5"><LogList rows={rows} detailed /></div>
