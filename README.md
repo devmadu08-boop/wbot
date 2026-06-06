@@ -53,12 +53,14 @@ After a reboot, Windows runs `pm2 resurrect`, which reloads the process list sav
 Deploy only the `client` folder on Vercel:
 
 1. Import this GitHub repo in Vercel.
-2. Set the Vercel project root directory to `client`.
+2. Recommended: set the Vercel project root directory to `client`.
 3. Add this Vercel environment variable:
 
 ```txt
 VITE_API_URL=http://YOUR_VPS_IP_OR_DOMAIN:3000
 ```
+
+The repo also includes a root `vercel.json`, so deploying from the repository root works too. In that mode, Vercel builds `client` and serves `client/dist`.
 
 4. On the VPS `.env`, allow the Vercel frontend origin:
 
