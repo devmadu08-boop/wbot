@@ -40,11 +40,13 @@ pm2 save
 pm2 startup
 ```
 
-Use Windows Task Scheduler if PM2 startup does not register cleanly:
+On Windows, `pm2 startup` may fail with `Init system not found`. Use the included Task Scheduler helper instead:
 
 ```powershell
-pm2 resurrect
+npm run windows:startup
 ```
+
+After a reboot, Windows runs `pm2 resurrect`, which reloads the process list saved by `pm2 save`.
 
 ## Notes
 
