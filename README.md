@@ -63,7 +63,7 @@ VITE_API_URL=http://YOUR_VPS_IP_OR_DOMAIN:3000
 4. On the VPS `.env`, allow the Vercel frontend origin:
 
 ```txt
-CLIENT_ORIGIN=http://localhost:5173,https://YOUR_VERCEL_APP.vercel.app
+CLIENT_ORIGIN=http://localhost:5173,https://wbot-nine.vercel.app
 ```
 
 5. Restart the backend after changing `.env`:
