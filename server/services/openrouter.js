@@ -49,27 +49,35 @@ export async function generateReply({ message, contact, context, samples, settin
 
   const prompt = await buildPrompt({ message, contact, context, samples });
   const model = settings.openrouter_model || "openai/gpt-4o-mini";
-  const response = await axios.post(
-    "https://openrouter.ai/api/v1/chat/completions",
-    {
-      model,
-      messages: [
-        { role: "system", content: prompt.system },
-        { role: "user", content: prompt.user }
-      ],
-      temperature: Number(settings.openrouter_temperature || 0.75),
-      max_tokens: Number(settings.openrouter_max_tokens || 180)
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-        "HTTP-Referer": "http://localhost",
-        "X-Title": "Madu AI WhatsApp Assistant"
+  let response;
+  try {
+    response = await axios.post(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
+        model,
+        messages: [
+          { role: "system", content: prompt.system },
+          { role: "user", content: prompt.user }
+        ],
+        temperature: Number(settings.openrouter_temperature || 0.75),
+        max_tokens: Number(settings.openrouter_max_tokens || 180)
       },
-      timeout: 30000
-    }
-  );
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://wbot-nine.vercel.app",
+          "X-Title": "Madu AI WhatsApp Assistant"
+        },
+        timeout: 30000
+      }
+    );
+  } catch (error) {
+    const status = error.response?.status;
+    const details = error.response?.data?.error?.message || error.response?.data?.message || error.response?.data;
+    const detailText = typeof details === "string" ? details : JSON.stringify(details || {});
+    throw new Error(`OpenRouter request failed${status ? ` (${status})` : ""}: ${detailText || error.message}`);
+  }
 
   return {
     text: response.data.choices?.[0]?.message?.content?.trim() || settings.fallback_message,
