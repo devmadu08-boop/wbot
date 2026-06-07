@@ -32,14 +32,25 @@ const apiBaseUrl = apiOrigin ? `${apiOrigin}/api` : "/api";
 const socketUrl = apiOrigin || window.location.origin;
 
 const api = axios.create({ baseURL: apiBaseUrl });
+const storedToken = localStorage.getItem("token");
+if (storedToken) api.defaults.headers.common.Authorization = `Bearer ${storedToken}`;
+
+function applyToken(token) {
+  if (token) {
+    api.defaults.headers.common.Authorization = `Bearer ${token}`;
+    localStorage.setItem("token", token);
+  } else {
+    delete api.defaults.headers.common.Authorization;
+    localStorage.removeItem("token");
+  }
+}
 
 function useAuth() {
-  const [token, setToken] = useState(localStorage.getItem("token"));
-  useEffect(() => {
-    api.defaults.headers.common.Authorization = token ? `Bearer ${token}` : "";
-    if (token) localStorage.setItem("token", token);
-    else localStorage.removeItem("token");
-  }, [token]);
+  const [token, setTokenState] = useState(storedToken);
+  function setToken(value) {
+    applyToken(value);
+    setTokenState(value);
+  }
   return { token, setToken };
 }
 
@@ -98,7 +109,7 @@ function AppShell({ onLogout }) {
   }, [dark]);
 
   useEffect(() => {
-    const socket = io(socketUrl);
+    const socket = io(socketUrl, { transports: ["polling"] });
     socket.on("message:new", () => {
       setToast("New WhatsApp message");
       new Audio("data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=").play().catch(() => {});
@@ -207,7 +218,7 @@ function WhatsApp() {
   }
   useEffect(() => {
     refresh();
-    const socket = io(socketUrl);
+    const socket = io(socketUrl, { transports: ["polling"] });
     socket.on("whatsapp:status", setState);
     return () => socket.disconnect();
   }, []);
